@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,6 +23,9 @@
         img#preview {
     border: 2px dotted red;
 }
+img{
+    cursor:pointer;
+}
  .uploadSec{
             width: 300px;
     border: 1px solid;
@@ -31,7 +33,11 @@
     padding-bottom: 10px;
     padding-left: 10px;
         }
+        i{
+            color : red;
+        }
     </style>
+    <!--exif Library to fetch latitude, longitude and camera details-->
     <script src="exif.min.js"></script>
 </head>
 <body>
@@ -41,13 +47,20 @@
     <img src="IMG_20200222_154426.jpg" class="DisplayImage"  alt="" height="260px"/>
     <img src="angular.png" class="DisplayImage"  alt="" height="260px"/>
     <img src="" class="" id="preview"  alt="Uploaded image" height="260px"/><br>
+    <i>Click on image to display the Details</i>
        <div class="uploadSec">
     <label for="uploadFile">Upload Image Here</label><br>
     <input type="file" id="uploadFile"  accept="image/*"/><br>
 </div>
+<div class="details">
      <p>Latitude : <span id="Lati"></span> </p>
     <p>Longitude : <span id="Long"></span></p>
-
+    <p>Camera Model / Maker : <span id="cmm"></span></p>
+    <p>Height x Width : <span id="resolution"></span></p>
+    <p>Capture Time : <span id="datetime"></span></p>
+    <p>ISO SpeedRatings : <span id="iso"></span></p>
+    <p>Shuttor Speed : <span id="stp"></span></p>
+</div>
 
     <script>
     (function () {
@@ -57,13 +70,21 @@
                 EXIF.getData(el.target.files[0], function() {
                  
                    EXIF.getData(this,()=>{
+                       console.log(this)
+                       
+                       
+                       
                     if(Object.keys(this.exifdata).length > 0){
+                        
+                    //display camera details    
+                      camera_details(this.exifdata)
+                      //display image details
                     generate_lat_lang(this)
+                    
+                
               
                 }else{
-                      document.getElementById("Lati").innerText = "N/A"
-                     document.getElementById("Long").innerText = "N/A"
-                      alert("No GPS Data Available")
+                     noDataAvailable()
                     }
    
                     });
@@ -75,11 +96,13 @@
             image[i].addEventListener('click', function(){
                 EXIF.getData(this,()=>{
             if(Object.keys(this.exifdata).length > 0){
-                generate_lat_lang(this)
+                     //display camera details    
+                      camera_details(this.exifdata)
+                      //display image details
+                    generate_lat_lang(this)
             }else{
-              document.getElementById("Lati").innerText = "N/A"
-              document.getElementById("Long").innerText = "N/A"
-               alert("No GPS Data Available")
+              noDataAvailable()
+               
             }
         });
             });
@@ -102,6 +125,41 @@
       }
     }
     
+    function noDataAvailable(){
+        
+        document.getElementById("Lati").innerText = "N/A"
+        document.getElementById("Long").innerText = "N/A"
+        document.getElementById("cmm").innerText = "N/A"
+        document.getElementById("resolution").innerText = "N/A"
+        document.getElementById("datetime").innerText = "N/A"
+        document.getElementById("iso").innerText = "N/A"
+        document.getElementById("stp").innerText = "N/A"
+        alert("No GPS Data Available")
+    }
+    
+    //getting camera details 
+   function camera_details(exifData=''){
+                        var cmm = "N/A"
+                        var company = "N/A"
+                        if(exifData.Model){
+                           cmm =  exifData.Model;
+                        }
+                         if(exifData.Make){
+                           company =  exifData.Make;
+                        }
+        
+        //Camera Model
+        document.getElementById("cmm").innerText = cmm+'-'+company
+        //Image Resolution
+        document.getElementById("resolution").innerText = (exifData.ImageHeight) ? exifData.ImageHeight : "N/A" +' '+ (exifData.ImageWidth) ? exifData.ImageWidth : "N/A"
+        //Image taken time
+        document.getElementById("datetime").innerText = (exifData.DateTimeOriginal) ? exifData.DateTimeOriginal : "N/A"
+        //Iso speed
+        document.getElementById("iso").innerText = (exifData.ISOSpeedRatings) ? exifData.ISOSpeedRatings : "N/A"
+        //lense shutter speed
+        document.getElementById("stp").innerText = (exifData.ShutterSpeedValue) ? exifData.ShutterSpeedValue : "N/A"
+        
+            }
     
     function generate_lat_lang(imageData=''){
        
